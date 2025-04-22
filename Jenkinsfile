@@ -1,5 +1,10 @@
 pipeline {
-  agent any
+  agent {
+    docker {
+      image 'node:18'
+      args '-u root -e DISPLAY=:99'
+    }
+  }
 
   environment {
     NODE_ENV = 'development'
@@ -32,18 +37,19 @@ pipeline {
 
     stage('Run Tests') {
       steps {
-        wrap([$class: 'Xvfb']) {
-          sh 'npm run test'
+        // Either use Xvfb (if installed on host) or run in headless mode
+        script {
+          try {
+            wrap([$class: 'Xvfb', autoDisplayName: true]) {
+              sh 'npm test'
+            }
+          } catch (e) {
+            echo 'Xvfb not available, running tests in headless mode'
+            sh 'npm test -- --headless'
+          }
         }
       }
     }
-    
-    agent {
-    docker {
-        image 'node:18'
-        args '-u root -e DISPLAY=:99'
-    }
-}
 
     stage('Build') {
       steps {
