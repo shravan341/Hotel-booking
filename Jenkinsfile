@@ -7,7 +7,7 @@ pipeline {
   }
 
   tools {
-    nodejs 'NodeJS 18' // Ensure this matches the Node.js version installed on your Jenkins agent
+    nodejs 'NodeJS 18' // Ensure this matches the Node.js installation name in Jenkins
   }
 
   stages {
@@ -48,10 +48,10 @@ pipeline {
       archiveArtifacts artifacts: 'build/**', fingerprint: true
     }
     success {
-      echo 'Pipeline completed successfully.'
+      echo '✅ Pipeline completed successfully.'
     }
     failure {
-      echo 'Pipeline failed.'
+      echo '❌ Pipeline failed.'
     }
   }
 }
