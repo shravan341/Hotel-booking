@@ -1,6 +1,6 @@
 pipeline {
   agent any
-  
+
   environment {
     NODE_ENV = 'development'
     CI = 'true'
@@ -31,13 +31,13 @@ pipeline {
     }
 
     stage('Run Cypress Tests') {
-            steps {
-                xvfb {
-                    sh 'npx cypress run --e2e'
-                    sh 'npx cypress run --component --headless'
-                }
-            }
+      steps {
+        wrap([$class: 'Xvfb']) {
+          sh 'npx cypress run --e2e'
+          sh 'npx cypress run --component --headless'
         }
+      }
+    }
 
     stage('Build') {
       steps {
@@ -48,9 +48,7 @@ pipeline {
 
   post {
     always {
-      script {
-        archiveArtifacts artifacts: 'build/**', fingerprint: true
-      }
+      archiveArtifacts artifacts: 'build/**', fingerprint: true
     }
     failure {
       echo '❌ Pipeline failed.'
