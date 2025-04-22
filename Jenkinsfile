@@ -37,6 +37,13 @@ pipeline {
         }
       }
     }
+    
+    agent {
+    docker {
+        image 'node:18'
+        args '-u root -e DISPLAY=:99'
+    }
+}
 
     stage('Build') {
       steps {
