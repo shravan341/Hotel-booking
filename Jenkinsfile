@@ -7,7 +7,7 @@ pipeline {
   }
 
   tools {
-    nodejs 'NodeJS' // Ensure this matches the Node.js installation name in Jenkins
+    nodejs 'NodeJS 18'
   }
 
   stages {
@@ -32,7 +32,9 @@ pipeline {
 
     stage('Run Tests') {
       steps {
-        sh 'npm run test'
+        wrap([$class: 'Xvfb']) {
+          sh 'npm run test'
+        }
       }
     }
 
