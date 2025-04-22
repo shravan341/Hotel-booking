@@ -1,11 +1,6 @@
 pipeline {
-  agent {
-    docker {
-      image 'node:18'
-      args '-u root -e DISPLAY=:99'
-    }
-  }
-
+  agent any
+  
   environment {
     NODE_ENV = 'development'
     CI = 'true'
@@ -37,14 +32,13 @@ pipeline {
 
     stage('Run Tests') {
       steps {
-        // Either use Xvfb (if installed on host) or run in headless mode
         script {
           try {
             wrap([$class: 'Xvfb', autoDisplayName: true]) {
               sh 'npm test'
             }
-          } catch (e) {
-            echo 'Xvfb not available, running tests in headless mode'
+          } catch(e) {
+            echo 'Running tests in headless mode'
             sh 'npm test -- --headless'
           }
         }
@@ -60,13 +54,15 @@ pipeline {
 
   post {
     always {
-      archiveArtifacts artifacts: 'build/**', fingerprint: true
-    }
-    success {
-      echo '✅ Pipeline completed successfully.'
+      script {
+        archiveArtifacts artifacts: 'build/**', fingerprint: true
+      }
     }
     failure {
       echo '❌ Pipeline failed.'
+    }
+    success {
+      echo '✅ Pipeline succeeded.'
     }
   }
 }
