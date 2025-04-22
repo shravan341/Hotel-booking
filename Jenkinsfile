@@ -1,66 +1,20 @@
 pipeline {
-  agent any
-
-  environment {
-    NODE_ENV = 'development'
-    CI = 'true'
-    DISPLAY = ':99'  // Set the DISPLAY environment variable for Xvfb
-  }
-
-  tools {
-    nodejs 'nodejs'
-  }
-
-  stages {
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
-    }
-
-    stage('Install Dependencies') {
-      steps {
-        sh 'npm ci'
-      }
-    }
-
-    stage('Lint & Format Check') {
-      steps {
-        sh 'npm run lint:check'
-        sh 'npm run format:check'
-      }
-    }
-
-    stage('Run Cypress Tests') {
-      steps {
-        script {
-          // Start Xvfb in the background
-          sh 'Xvfb :99 -screen 0 1024x768x24 &'
-          // Run Cypress tests
-          sh 'npx cypress run --e2e'
-          sh 'npx cypress run --component --headless'
-          // Stop Xvfb after tests
-          sh 'pkill Xvfb'
+    agent any
+    tools {nodejs "NODEJS"}
+    stages {
+        stage('Build') {
+            steps {
+                sh 'npm install'
+            }
         }
-      }
+        stage('Deliver') {
+            steps {
+                sh 'chmod -R +rwx ./jenkins/scripts/deliver.sh'
+                sh 'chmod -R +rwx ./jenkins/scripts/kill.sh'
+                sh './jenkins/scripts/deliver.sh'
+                input message: 'Finished using the web site? (Click "Proceed" to continue)'
+                sh './jenkins/scripts/kill.sh'
+            }
+        }
     }
-
-    stage('Build') {
-      steps {
-        sh 'npm run build'
-      }
-    }
-  }
-
-  post {
-    always {
-      archiveArtifacts artifacts: 'build/**', fingerprint: true
-    }
-    failure {
-      echo '❌ Pipeline failed.'
-    }
-    success {
-      echo '✅ Pipeline succeeded.'
-    }
-  }
 }
