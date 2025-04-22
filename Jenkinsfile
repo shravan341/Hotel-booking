@@ -30,20 +30,14 @@ pipeline {
       }
     }
 
-    stage('Run Tests') {
-      steps {
-        script {
-          try {
-            wrap([$class: 'Xvfb', autoDisplayName: true]) {
-              sh 'npm test'
+    stage('Run Cypress Tests') {
+            steps {
+                xvfb {
+                    sh 'npx cypress run --e2e'
+                    sh 'npx cypress run --component --headless'
+                }
             }
-          } catch(e) {
-            echo 'Running tests in headless mode'
-            sh 'npm test -- --headless'
-          }
         }
-      }
-    }
 
     stage('Build') {
       steps {
