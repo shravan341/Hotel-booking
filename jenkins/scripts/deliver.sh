@@ -1,17 +1,27 @@
 #!/usr/bin/env sh
 
-npm run build
-
-# Kill any existing app (optional: if you're not using a separate kill.sh)
+# Kill old process if needed
 if [ -f .pidfile ]; then
-    kill -9 $(cat .pidfile)
-    rm .pidfile
+  PID=$(cat .pidfile)
+  if ps -p $PID > /dev/null 2>&1; then
+    echo "Killing previous process $PID"
+    kill -9 $PID
+  fi
+  rm .pidfile
 fi
 
-# Serve the production build
-npx serve -s build &
-sleep 1
+# Install serve if not installed
+if ! command -v serve >/dev/null 2>&1; then
+  npm install -g serve
+fi
+
+# Build the app
+npm install
+npm run build || exit 1
+
+# Start the production server
+echo "Starting production server..."
+npx serve -s build -l 3000 > serve.log 2>&1 &
 echo $! > .pidfile
 
-echo 'Now...'
-echo 'Visit http://localhost:5000 to see your deployed React app.'
+echo '✅ App running on http://localhost:3000'
