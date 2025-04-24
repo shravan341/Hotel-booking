@@ -33,7 +33,7 @@ pipeline {
 
         stage('Preview') {
             steps {
-                input message: 'App is running on http://localhost:3000. Click "Proceed" to stop it.'
+                input message: 'App is running on https://hotel-booking56988.vercel.app/. Click "Proceed" to stop it.'
             }
         }
 
