@@ -1,19 +1,45 @@
 pipeline {
     agent any
-    tools {nodejs "NODEJS"}
+
+    tools {
+        nodejs "NODEJS"
+    }
+
+    environment {
+        BUILD_DIR = 'build'
+        SCRIPTS_DIR = './jenkins/scripts'
+    }
+
     stages {
-        stage('Build') {
+        stage('Install Dependencies') {
             steps {
                 sh 'npm install'
             }
         }
-        stage('Deliver') {
+
+        stage('Build App') {
             steps {
-                sh 'chmod -R +rwx ./jenkins/scripts/deliver.sh'
-                sh 'chmod -R +rwx ./jenkins/scripts/kill.sh'
-                sh './jenkins/scripts/deliver.sh'
-                input message: 'Finished using the web site? (Click "Proceed" to continue)'
-                sh './jenkins/scripts/kill.sh'
+                sh 'npm run build'
+            }
+        }
+
+        stage('Start Server') {
+            steps {
+                sh "chmod +x ${SCRIPTS_DIR}/kill.sh ${SCRIPTS_DIR}/deliver.sh"
+                sh "${SCRIPTS_DIR}/kill.sh || true"
+                sh "${SCRIPTS_DIR}/deliver.sh"
+            }
+        }
+
+        stage('Preview') {
+            steps {
+                input message: 'App is running on http://localhost:3000. Click "Proceed" to stop it.'
+            }
+        }
+
+        stage('Stop Server') {
+            steps {
+                sh "${SCRIPTS_DIR}/kill.sh || true"
             }
         }
     }
