@@ -2,9 +2,16 @@
 
 npm run build
 
-npm start &
+# Kill any existing app (optional: if you're not using a separate kill.sh)
+if [ -f .pidfile ]; then
+    kill -9 $(cat .pidfile)
+    rm .pidfile
+fi
+
+# Serve the production build
+npx serve -s build &
 sleep 1
 echo $! > .pidfile
 
 echo 'Now...'
-echo 'Visit http://localhost:3000 to see your Node.js/React application in action.'
+echo 'Visit http://localhost:5000 to see your deployed React app.'
