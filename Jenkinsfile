@@ -51,16 +51,16 @@ pipeline {
             }
         }
 
-        stage('Stop Server') {
-            steps {
-                script {
-                    bat "call \"${SCRIPTS_DIR}\\kill.bat\""
-                    bat "echo Cleaning up workspace..."
-                    bat "rd /s /q ${BUILD_DIR}"  // Clean build directory
-                }
-            }
+       stage('Stop Server') {
+    steps {
+        script {
+            bat 'call "jenkins\\scripts\\kill.bat"'
+            sleep(time: 5, unit: 'SECONDS') // Add 5-second delay
+            bat 'echo Cleaning up workspace...'
+            bat 'rd /s /q build'
         }
     }
+}
 
     post {
         always {
