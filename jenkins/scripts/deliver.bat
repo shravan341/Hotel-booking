@@ -1,5 +1,4 @@
 @echo off
 echo Starting application...
-cd /D "%WORKSPACE%"
-start "HotelApp" /MIN npm run start
+start /B "HotelAppServer" npm run start
 exit 0
