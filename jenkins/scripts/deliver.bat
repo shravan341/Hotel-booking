@@ -1,4 +1,4 @@
 @echo off
 echo Starting application...
-start /B "HotelAppServer" npm run start
+start "HotelApp" /B npm run start
 exit 0
