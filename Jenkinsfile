@@ -55,9 +55,9 @@ pipeline {
     steps {
         script {
             bat 'call "jenkins\\scripts\\kill.bat"'
-            sleep(time: 5, unit: 'SECONDS') // Add 5-second delay
-            bat 'echo Cleaning up workspace...'
-            bat 'rd /s /q build'
+            sleep(15) // Extended delay
+            bat 'rd /s /q build || echo "Build folder already removed"'
+            bat 'del /F /Q "%WORKSPACE%\\*" || echo "Files already removed"'
         }
     }
 }
