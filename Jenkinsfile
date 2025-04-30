@@ -6,7 +6,7 @@ pipeline {
                 checkout scm
             }
         }
-        
+
         stage('Install Dependencies') {
             steps {
                 script {
@@ -14,7 +14,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Build App') {
             steps {
                 script {
@@ -22,34 +22,34 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Start Server') {
             steps {
                 script {
                     bat 'call "jenkins\\scripts\\kill.bat"'
+                    sleep(time: 5, unit: 'SECONDS')  // Add cleanup delay
                     bat 'call "jenkins\\scripts\\deliver.bat"'
-                    sleep(time: 15, unit: 'SECONDS')
                 }
             }
         }
-        
+
         stage('Preview') {
             steps {
                 script {
                     timeout(time: 30, unit: 'MINUTES') {
-                        input message: 'App is running. Click Proceed to stop.', ok: 'Proceed'
+                        input message: 'App is running at http://localhost:3000. Click Proceed to stop.', 
+                               ok: 'Proceed'
                     }
                 }
             }
         }
-        
+
         stage('Stop Server') {
             steps {
                 script {
                     bat 'call "jenkins\\scripts\\kill.bat"'
                     sleep(time: 5, unit: 'SECONDS')
-                    bat 'echo Cleaning up workspace...'
-                    bat 'rd /s /q build || echo "Build folder cleanup failed"'
+                    bat 'rd /s /q build || echo Build folder cleanup failed'
                 }
             }
         }
@@ -59,13 +59,11 @@ pipeline {
         always {
             script {
                 bat 'call "jenkins\\scripts\\kill.bat"'
-                sleep(time: 10, unit: 'SECONDS')
+                sleep(time: 5, unit: 'SECONDS')
                 cleanWs(
                     cleanWhenAborted: true,
                     cleanWhenFailure: true,
-                    cleanWhenNotBuilt: true,
                     cleanWhenSuccess: true,
-                    deleteDirs: true,
                     notFailBuild: true
                 )
             }
