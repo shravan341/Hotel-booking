@@ -2,45 +2,70 @@ pipeline {
     agent any
 
     tools {
-        nodejs "NODEJS"  // Ensure this is configured for Windows in Jenkins
+        nodejs "NODEJS"  // Ensure Windows Node.js is configured in Jenkins Global Tools
     }
 
     environment {
-        BUILD_DIR = 'build'
-        SCRIPTS_DIR = '.\\jenkins\\scripts'  // Use Windows path separator
+        BUILD_DIR = "${WORKSPACE}\\build"
+        SCRIPTS_DIR = "${WORKSPACE}\\jenkins\\scripts"  // Absolute path with workspace
+        APP_URL = "https://hotel-booking56988.vercel.app/"
     }
 
     stages {
         stage('Install Dependencies') {
             steps {
-                bat 'npm install'  // Changed to bat
+                bat 'npm install --no-fund --no-audit'  // Suppress npm warnings
             }
         }
 
         stage('Build App') {
             steps {
-                bat 'npm run build'  // Changed to bat
+                bat 'npm run build'
             }
         }
 
         stage('Start Server') {
             steps {
-                // Remove chmod as it's not needed on Windows
-                bat "call ${SCRIPTS_DIR}\\kill.bat"  // Changed to .bat scripts
-                bat "call ${SCRIPTS_DIR}\\deliver.bat"
+                script {
+                    // Cleanup any existing processes first
+                    bat "call \"${SCRIPTS_DIR}\\kill.bat\""
+                    
+                    // Start the application
+                    bat "call \"${SCRIPTS_DIR}\\deliver.bat\""
+                    
+                    // Wait for server to start
+                    sleep(time: 15, unit: 'SECONDS')
+                }
             }
         }
 
         stage('Preview') {
             steps {
-                input message: 'App is running on https://hotel-booking56988.vercel.app/. Click "Proceed" to stop it.'
+                script {
+                    // Interactive confirmation with timeout
+                    timeout(time: 30, unit: 'MINUTES') {
+                        input message: "App is running at ${APP_URL}. Click Proceed to stop.", 
+                              ok: "Proceed"
+                    }
+                }
             }
         }
 
         stage('Stop Server') {
             steps {
-                bat "call ${SCRIPTS_DIR}\\kill.bat"  // Changed to .bat
+                script {
+                    bat "call \"${SCRIPTS_DIR}\\kill.bat\""
+                    bat "echo Cleaning up workspace..."
+                    bat "rd /s /q ${BUILD_DIR}"  // Clean build directory
+                }
             }
+        }
+    }
+
+    post {
+        always {
+            bat "call \"${SCRIPTS_DIR}\\kill.bat\""  // Ensure cleanup even if pipeline fails
+            cleanWs()  // Optional: Clean workspace after build
         }
     }
 }
