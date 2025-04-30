@@ -2,32 +2,32 @@ pipeline {
     agent any
 
     tools {
-        nodejs "NODEJS"
+        nodejs "NODEJS"  // Ensure this is configured for Windows in Jenkins
     }
 
     environment {
         BUILD_DIR = 'build'
-        SCRIPTS_DIR = './jenkins/scripts'
+        SCRIPTS_DIR = '.\\jenkins\\scripts'  // Use Windows path separator
     }
 
     stages {
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'
+                bat 'npm install'  // Changed to bat
             }
         }
 
         stage('Build App') {
             steps {
-                sh 'npm run build'
+                bat 'npm run build'  // Changed to bat
             }
         }
 
         stage('Start Server') {
             steps {
-                sh "chmod +x ${SCRIPTS_DIR}/kill.sh ${SCRIPTS_DIR}/deliver.sh"
-                sh "${SCRIPTS_DIR}/kill.sh || true"
-                sh "${SCRIPTS_DIR}/deliver.sh"
+                // Remove chmod as it's not needed on Windows
+                bat "call ${SCRIPTS_DIR}\\kill.bat"  // Changed to .bat scripts
+                bat "call ${SCRIPTS_DIR}\\deliver.bat"
             }
         }
 
@@ -39,7 +39,7 @@ pipeline {
 
         stage('Stop Server') {
             steps {
-                sh "${SCRIPTS_DIR}/kill.sh || true"
+                bat "call ${SCRIPTS_DIR}\\kill.bat"  // Changed to .bat
             }
         }
     }
